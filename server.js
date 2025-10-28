@@ -71,15 +71,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Logout
-app.post("/logout", verifyToken, async (req, res) => {
-  try {
-    // Future: Add token blacklist or revocation here if needed
-    res.json({ success: true, message: "Logged out successfully 🚪" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Logout failed" });
-  }
-});
+
 
 
 // Middleware to verify JWT
@@ -95,6 +87,16 @@ const verifyToken = (req, res, next) => {
     next();
   });
 };
+
+app.post("/logout", verifyToken, async (req, res) => {
+  try {
+    // Future: Add token blacklist or revocation here if needed
+    res.json({ success: true, message: "Logged out successfully 🚪" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Logout failed" });
+  }
+});
 
 // =========================
 // 🧠 Memory Routes (Protected)
