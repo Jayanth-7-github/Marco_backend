@@ -30,6 +30,7 @@ mongoose
 // =========================
 
 // Register
+// Register
 app.post("/register", async (req, res) => {
   try {
     const { userId, password } = req.body;
@@ -68,6 +69,18 @@ app.post("/login", async (req, res) => {
     res.status(500).json({ success: false, message: "Login failed" });
   }
 });
+
+// Logout
+app.post("/logout", verifyToken, async (req, res) => {
+  try {
+    // Future: Add token blacklist or revocation here if needed
+    res.json({ success: true, message: "Logged out successfully 🚪" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Logout failed" });
+  }
+});
+
 
 // Middleware to verify JWT
 const verifyToken = (req, res, next) => {
