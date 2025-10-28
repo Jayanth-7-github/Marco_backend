@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 import User from "./models/User.js";
 import Memory from "./models/Memory.js";
 
@@ -11,7 +12,9 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors());
+// ✅ Configure CORS (important for cookies)
 
 // ✅ Connect to MongoDB
 const MONGO_URI = process.env.MONGO_URI;
@@ -29,7 +32,6 @@ mongoose
 // 🧍 User Authentication
 // =========================
 
-// Register
 // Register
 app.post("/register", async (req, res) => {
   try {
@@ -62,8 +64,19 @@ app.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: "Incorrect password!" });
 
-    const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
-    res.json({ success: true, message: `Welcome back, ${userId}!`, token });
+    const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    // ✅ Store token in secure cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none", // for cross-origin
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.json({ success: true, message: `Welcome back, ${userId}!` });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Login failed" });
@@ -71,32 +84,33 @@ app.post("/login", async (req, res) => {
 });
 
 // Logout
-
-
-
-// Middleware to verify JWT
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader)
-    return res.status(403).json({ message: "No token provided. Please login." });
-
-  const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(401).json({ message: "Invalid or expired token." });
-    req.userId = decoded.userId;
-    next();
-  });
-};
-
-app.post("/logout", verifyToken, async (req, res) => {
+app.post("/logout", (req, res) => {
   try {
-    // Future: Add token blacklist or revocation here if needed
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+    });
     res.json({ success: true, message: "Logged out successfully 🚪" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Logout failed" });
   }
 });
+
+// Middleware to verify JWT
+const verifyToken = (req, res, next) => {
+  const token =
+    req.cookies.token || (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+
+  if (!token) return res.status(403).json({ message: "No token provided. Please login." });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ message: "Invalid or expired token." });
+    req.userId = decoded.userId;
+    next();
+  });
+};
 
 // =========================
 // 🧠 Memory Routes (Protected)
