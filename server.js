@@ -4,6 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 import User from "./models/User.js";
 import Memory from "./models/Memory.js";
 import Chat from "./models/Chat.js";
@@ -12,13 +13,15 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
-// ✅ Allow all mobile requests
+// ✅ Allow mobile requests with credentials
 app.use(
   cors({
-    origin: "*", // React Native fetch doesn't need specific origin
+    origin: "*", // Add your React Native app's URL
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // Allow credentials
   })
 );
 
@@ -79,11 +82,18 @@ app.post("/login", async (req, res) => {
       expiresIn: "7d",
     });
 
-    // ✅ Send token back to React Native app
+    // Set JWT in cookie
+    res.cookie("token", token, {
+      httpOnly: true, // Prevents JavaScript access to cookie
+      secure: process.env.NODE_ENV === "production", // Use HTTPS in production
+      sameSite: "strict", // CSRF protection
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+    });
+
+    // ✅ Send success response
     res.json({
       success: true,
       message: `Welcome back, ${userId}!`,
-      token,
     });
   } catch (error) {
     console.error(error);
@@ -91,8 +101,9 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// 🔹 Logout (handled client-side)
+// 🔹 Logout
 app.post("/logout", (req, res) => {
+  res.clearCookie("token"); // Clear the token cookie
   res.json({ success: true, message: "Logged out successfully 🚪" });
 });
 
@@ -100,15 +111,23 @@ app.post("/logout", (req, res) => {
 // 🔐 JWT Middleware
 // =========================
 const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token)
+  // Check for token in cookies first, then in Authorization header
+  const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
     return res
       .status(403)
       .json({ message: "No token provided. Please login." });
+  }
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err)
+    if (err) {
+      // Clear invalid cookie if present
+      if (req.cookies.token) {
+        res.clearCookie("token");
+      }
       return res.status(401).json({ message: "Invalid or expired token." });
+    }
     req.userId = decoded.userId;
     next();
   });
@@ -163,10 +182,9 @@ app.delete("/memory", verifyToken, async (req, res) => {
 // 💬 Chat Routes (Protected)
 // =========================
 
-// 🔹 Store or update full chat conversation
-app.post("/chat/:chatId", verifyToken, async (req, res) => {
+// 🔹 Store new chat conversation (generates chatId automatically)
+app.post("/chat", verifyToken, async (req, res) => {
   try {
-    const { chatId } = req.params;
     const { conversation } = req.body;
     const userId = req.userId;
 
@@ -177,27 +195,20 @@ app.post("/chat/:chatId", verifyToken, async (req, res) => {
       });
     }
 
-    let chat = await Chat.findOne({ chatId });
-    if (!chat) {
-      // Create new chat
-      chat = new Chat({
-        chatId,
-        userId,
-        conversation,
-        timestamp: new Date(),
-      });
-    } else {
-      // Verify chat ownership
-      if (chat.userId !== userId) {
-        return res.status(403).json({
-          success: false,
-          message: "You don't have permission to access this chat",
-        });
-      }
-      // Update existing chat
-      chat.conversation = conversation;
-      chat.timestamp = new Date();
-    }
+    // Generate a unique chatId
+    const chatId =
+      "chat_" +
+      new Date().getTime() +
+      "_" +
+      Math.random().toString(36).substring(2, 15);
+
+    // Create new chat
+    const chat = new Chat({
+      chatId,
+      userId,
+      conversation,
+      timestamp: new Date(),
+    });
 
     await chat.save();
 
