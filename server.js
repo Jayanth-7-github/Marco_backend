@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "./models/User.js";
 import Memory from "./models/Memory.js";
+import Chat from "./models/Chat.js";
 
 dotenv.config();
 
@@ -42,11 +43,15 @@ app.post("/register", async (req, res) => {
   try {
     const { userId, password } = req.body;
     if (!userId || !password)
-      return res.status(400).json({ message: "Please provide userId and password." });
+      return res
+        .status(400)
+        .json({ message: "Please provide userId and password." });
 
     const existingUser = await User.findOne({ userId });
     if (existingUser)
-      return res.status(400).json({ message: "User ID already exists. Try another!" });
+      return res
+        .status(400)
+        .json({ message: "User ID already exists. Try another!" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({ userId, password: hashedPassword });
@@ -67,7 +72,8 @@ app.post("/login", async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found!" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Incorrect password!" });
+    if (!isMatch)
+      return res.status(401).json({ message: "Incorrect password!" });
 
     const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
       expiresIn: "7d",
@@ -95,10 +101,14 @@ app.post("/logout", (req, res) => {
 // =========================
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(403).json({ message: "No token provided. Please login." });
+  if (!token)
+    return res
+      .status(403)
+      .json({ message: "No token provided. Please login." });
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(401).json({ message: "Invalid or expired token." });
+    if (err)
+      return res.status(401).json({ message: "Invalid or expired token." });
     req.userId = decoded.userId;
     next();
   });
@@ -133,7 +143,9 @@ app.get("/memory", verifyToken, async (req, res) => {
     const memory = await Memory.findOne({ userId: req.userId });
     res.json(memory || { memories: [] });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Error retrieving memory" });
+    res
+      .status(500)
+      .json({ success: false, message: "Error retrieving memory" });
   }
 });
 
@@ -144,6 +156,148 @@ app.delete("/memory", verifyToken, async (req, res) => {
     res.json({ success: true, message: "🧹 All memories cleared!" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error clearing memory" });
+  }
+});
+
+// =========================
+// 💬 Chat Routes (Protected)
+// =========================
+
+// 🔹 Store or update full chat conversation
+app.post("/chat/:chatId", verifyToken, async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const { conversation } = req.body;
+    const userId = req.userId;
+
+    if (!Array.isArray(conversation)) {
+      return res.status(400).json({
+        success: false,
+        message: "Conversation must be an array of messages",
+      });
+    }
+
+    let chat = await Chat.findOne({ chatId });
+    if (!chat) {
+      // Create new chat
+      chat = new Chat({
+        chatId,
+        userId,
+        conversation,
+        timestamp: new Date(),
+      });
+    } else {
+      // Verify chat ownership
+      if (chat.userId !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: "You don't have permission to access this chat",
+        });
+      }
+      // Update existing chat
+      chat.conversation = conversation;
+      chat.timestamp = new Date();
+    }
+
+    await chat.save();
+
+    res.json({
+      success: true,
+      message: "Chat conversation saved!",
+      data: chat,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Error saving chat conversation",
+    });
+  }
+});
+
+// 🔹 Retrieve chat by chatId
+app.get("/chat/:chatId", verifyToken, async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const chat = await Chat.findOne({ chatId });
+
+    if (!chat) {
+      return res.status(404).json({
+        success: false,
+        message: "Chat not found",
+      });
+    }
+
+    // Verify chat ownership
+    if (chat.userId !== req.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to access this chat",
+      });
+    }
+
+    res.json({
+      success: true,
+      data: chat,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving chat",
+    });
+  }
+});
+
+// 🔹 Delete chat by chatId
+app.delete("/chat/:chatId", verifyToken, async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const chat = await Chat.findOne({ chatId });
+
+    if (!chat) {
+      return res.status(404).json({
+        success: false,
+        message: "Chat not found",
+      });
+    }
+
+    // Verify chat ownership
+    if (chat.userId !== req.userId) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to delete this chat",
+      });
+    }
+
+    await Chat.deleteOne({ chatId });
+    res.json({
+      success: true,
+      message: "💫 Chat deleted successfully!",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting chat",
+    });
+  }
+});
+
+// 🔹 Get all chats for current user
+app.get("/chats", verifyToken, async (req, res) => {
+  try {
+    const chats = await Chat.find({ userId: req.userId });
+    res.json({
+      success: true,
+      data: chats,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving chats",
+    });
   }
 });
 
