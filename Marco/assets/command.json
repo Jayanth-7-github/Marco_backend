@@ -1,0 +1,292 @@
+[
+  {
+    "intent": "greet",
+    "patterns": [
+      "hi",
+      "hello",
+      "hey",
+      "good morning",
+      "good evening",
+      "yo",
+      "what's up",
+      "heya",
+      "hiya",
+      "howdy"
+    ],
+    "response": "Hey there! How are you doing? 🌞"
+  },
+  {
+    "intent": "remind",
+    "patterns": [
+      "remind me to",
+      "remind me",
+      "set a reminder",
+      "set reminder",
+      "create reminder",
+      "add reminder",
+      "notify me",
+      "remind me about",
+      "remaind me to",
+      "remaind me"
+    ],
+    "response": "I'll set a reminder for you 🔔"
+  },
+  {
+    "intent": "call",
+    "patterns": ["call", "phone", "ring", "dial"],
+    "response": "I'll set a reminder for your call 📞"
+  },
+  {
+    "intent": "search_memory",
+    "patterns": [
+      "search for",
+      "find in memory",
+      "look up",
+      "what do you know about",
+      "tell me about"
+    ],
+    "response": "Let me search through my memories 🔍"
+  },
+  {
+    "intent": "remember_name",
+    "patterns": [
+      "my name is",
+      "i am",
+      "i'm",
+      "iam",
+      "i am",
+      "call me",
+      "myself"
+    ],
+    "response": "Nice to meet you! I'll remember your name. 💖"
+  },
+  {
+    "intent": "name_query",
+    "patterns": [
+      "who am i",
+      "what is my name",
+      "do you remember my name",
+      "tell me my name",
+      "my name",
+      "who i am"
+    ],
+    "response": "Let me check my memory for your name! 🧠"
+  },
+  {
+    "intent": "show_memory",
+    "patterns": [
+      "show memory",
+      "display memory",
+      "list memory",
+      "what do you remember",
+      "open memory"
+    ],
+    "response": "Here’s what I remember so far 📘"
+  },
+  {
+    "intent": "exit",
+    "patterns": [
+      "exit",
+      "quit",
+      "close",
+      "stop",
+      "bye",
+      "goodbye",
+      "see you",
+      "end chat"
+    ],
+    "response": "Goodbye! 👋 Take care and see you soon!"
+  },
+  {
+    "intent": "time",
+    "patterns": [
+      "what time is it",
+      "tell me the time",
+      "current time",
+      "time now",
+      "show time",
+      "what's the time"
+    ],
+    "response": "Let me check my clock for you ⏰"
+  },
+  {
+    "intent": "date",
+    "patterns": [
+      "what's today's date",
+      "what day is it",
+      "today's date",
+      "date now",
+      "what's the date",
+      "show date"
+    ],
+    "response": "Here’s today’s date 📅"
+  },
+  {
+    "intent": "motivation",
+    "patterns": [
+      "motivate me",
+      "i need motivation",
+      "say something inspiring",
+      "give me a quote",
+      "inspire me",
+      "boost my mood"
+    ],
+    "response": "Here’s a little inspiration for you 💫"
+  },
+  {
+    "intent": "joke",
+    "patterns": [
+      "tell me a joke",
+      "make me laugh",
+      "say something funny",
+      "funny joke",
+      "crack a joke"
+    ],
+    "response": "Here’s a joke to brighten your mood 😂"
+  },
+  {
+    "intent": "weather",
+    "patterns": [
+      "what's the weather",
+      "tell me the weather",
+      "is it raining",
+      "how's the weather",
+      "weather now",
+      "today's weather"
+    ],
+    "response": "Let me check the skies for you ☁️"
+  },
+  {
+    "intent": "fact",
+    "patterns": [
+      "tell me a fact",
+      "fun fact",
+      "interesting fact",
+      "share a fact",
+      "say something interesting"
+    ],
+    "response": "Here’s an interesting fact 🤓"
+  },
+  {
+    "intent": "mood",
+    "patterns": [
+      "i am sad",
+      "i feel bad",
+      "i'm happy",
+      "i'm excited",
+      "i'm angry",
+      "feeling low",
+      "feeling great",
+      "feeling bored"
+    ],
+    "response": "I can feel your mood 💖 — let’s talk about it!"
+  },
+  {
+    "intent": "thanks",
+    "patterns": [
+      "thank you",
+      "thanks",
+      "appreciate it",
+      "thx",
+      "thanks a lot",
+      "thank you so much"
+    ],
+    "response": "You’re always welcome 🌸"
+  },
+  {
+    "intent": "who_are_you",
+    "patterns": [
+      "who are you",
+      "what are you",
+      "what can you do",
+      "tell me about yourself",
+      "who is marco"
+    ],
+    "response": "I’m Marco, your friendly AI buddy 🤖 — here to chat, remember, and help!"
+  },
+  {
+    "intent": "clear_memory",
+    "patterns": [
+      "forget everything",
+      "clear memory",
+      "delete memory",
+      "reset memory",
+      "erase memory"
+    ],
+    "response": "Alright, I’ll forget everything you told me 🧹"
+  },
+  {
+    "intent": "note_add",
+    "patterns": [
+      "remember this",
+      "save this note",
+      "take a note",
+      "write this down",
+      "note this"
+    ],
+    "response": "Sure! I’ve saved that note in my memory 📘"
+  },
+  {
+    "intent": "note_list",
+    "patterns": [
+      "show notes",
+      "list my notes",
+      "what notes do you have",
+      "display notes",
+      "open notes"
+    ],
+    "response": "Here are your saved notes 🗒️"
+  },
+  {
+    "intent": "show_reminders",
+    "patterns": [
+      "what are the reminders",
+      "what are my reminders",
+      "show my reminders",
+      "list reminders",
+      "show reminders",
+      "check reminders",
+      "display reminders",
+      "what do i have to do",
+      "what are the remainders",
+      "show remainders",
+      "show my remainders",
+      "list remainders",
+      "display remainders",
+      "check remainders",
+      "show my tasks"
+    ],
+    "response": "Here are your reminders 📝"
+  },
+  {
+    "intent": "search",
+    "patterns": [
+      "search *",
+      "search for *",
+      "find information about *",
+      "look up *",
+      "tell me about *",
+      "what do you know about *",
+      "search products *",
+      "find products *",
+      "search amazon *",
+      "search news about *",
+      "find news about *",
+      "search the web for *"
+    ],
+    "response": "Let me search for that information 🔍"
+  },
+  {
+    "intent": "get_headlines",
+    "patterns": [
+      "show headlines",
+      "top headlines",
+      "latest news",
+      "show news",
+      "current headlines",
+      "today's news",
+      "breaking news"
+    ],
+    "response": "Here are the latest headlines 📰"
+  }
+]

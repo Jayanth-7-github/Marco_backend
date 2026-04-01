@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Marco",
+    "slug": "Marco",
+    "version": "1.2.2",
+    "orientation": "portrait",
+    "icon": "./assets/Marco.jpg",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/Marco.jpg",
+      "resizeMode": "contain",
+      "backgroundColor": "#1E1E1E"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/Marco.jpg",
+        "backgroundColor": "#1E1E1E"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.jayanth7.Marco"
+    },
+    "web": {
+      "favicon": "./assets/Marco.jpg"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0075c406-5a55-461c-b0e6-17b66b886377"
+      }
+    },
+    "plugins": [
+      "expo-audio"
+    ]
+  }
+}
